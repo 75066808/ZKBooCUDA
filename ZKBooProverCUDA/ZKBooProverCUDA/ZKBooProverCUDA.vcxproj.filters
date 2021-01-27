@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CudaCompile Include="aes.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="sha.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="rand.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="mpc.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="main.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="utility.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aes.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sha.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rand.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="utility.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mpc.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="setting.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{4936059e-ce3a-4e0c-80ec-5b67a5e90f7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{aa3dfd80-f426-41c3-aa34-a5001aa799e6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
