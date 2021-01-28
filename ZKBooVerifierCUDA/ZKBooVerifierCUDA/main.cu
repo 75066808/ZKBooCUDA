@@ -119,7 +119,7 @@ __global__ void verifyMPC(volatile bool* vflag) {
 	int rgid = rbid * GROUP_PER_BLOCK + bgid; // group id in grid
 
 	if (rgid < NUM_ROUNDS)
-		dMpcSha1Verify(bgid, gpid, randomness[rgid], zs[rgid].v, vflag);
+		dMpcShaVerify(bgid, gpid, randomness[rgid], zs[rgid].v, vflag);
 }
 
 __global__ void warmup(void) {
@@ -174,8 +174,8 @@ int main() {
 	clock_t end = clock();
 
 	printf("Proof for hash: ");
-	for (int i = 0; i < 8; i++)
-		printf("%02X", y[i]);
+	for (int i = 0; i < RESULT_WORD; i++)
+		printf("%08X", y[i]);
 	printf("\n");
 
 	if (vflagh)

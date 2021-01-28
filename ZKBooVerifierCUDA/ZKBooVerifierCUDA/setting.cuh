@@ -1,4 +1,17 @@
 #pragma once
+//#define SHA1
+
+#ifdef  SHA1
+#define YSIZE						370
+#define GENRAND_ITER				92
+#define RESULT_WORD					5
+
+#else
+#define YSIZE						736
+#define GENRAND_ITER				182
+#define RESULT_WORD					8
+
+#endif
 
 #define WARP_SIZE					32
 
@@ -14,8 +27,6 @@
 
 #define	VERIFY_PATH_NUM				2
 
-#define YSIZE						370
-
-#define GENRAND_ITER				92
-
 #define RANDTAPE_SIZE				GENRAND_ITER * 16
+
+#define RESULT_BYTE					RESULT_WORD * 4

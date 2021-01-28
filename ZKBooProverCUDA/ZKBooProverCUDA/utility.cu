@@ -54,7 +54,7 @@ __host__ void H3(uint32_t y[8], a* as, int s, int* es) {
 
 	SHA256_CTX ctx;
 	SHA256_Init(&ctx);
-	SHA256_Update(&ctx, y, 20);
+	SHA256_Update(&ctx, y, RESULT_BYTE);
 	SHA256_Update(&ctx, as, sizeof(a) * s);
 	SHA256_Final(hash, &ctx);
 

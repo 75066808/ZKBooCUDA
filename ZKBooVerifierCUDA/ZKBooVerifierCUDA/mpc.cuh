@@ -22,7 +22,7 @@ typedef struct {
 	unsigned char r[2][4];
 } z;
 
-__device__ void dMpcSha1Verify(int bgid, int gpid, unsigned char(*randomness)[RANDTAPE_SIZE], View* views, volatile bool* vflag);
+__device__ void dMpcShaVerify(int bgid, int gpid, unsigned char(*randomness)[RANDTAPE_SIZE], View* views, volatile bool* vflag);
 
 __device__ void output(View* v, void* result);
 

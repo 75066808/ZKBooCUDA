@@ -22,6 +22,6 @@ typedef struct {
 	unsigned char r[2][4];
 } z;
 
-__device__ void dMpcSha1(int bgid, int gpid, unsigned char* result, unsigned char* input, int numBits, unsigned char (*randomness)[RANDTAPE_SIZE], View* view, int* countY);
+__device__ void dMpcSha(int bgid, int gpid, unsigned char* result, unsigned char* input, int numBits, unsigned char (*randomness)[RANDTAPE_SIZE], View* view, int* countY);
 
 __device__ void output(View* v, void* result);

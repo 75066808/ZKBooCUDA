@@ -102,11 +102,15 @@ __global__ void commitA(int bytes) {
 
 		int countY = 0;
 
-		dMpcSha1(bgid, gpid, hash, input, bytes * 8, randomness[rgid], &views[rgid][gpid], &countY);
+		dMpcSha(bgid, gpid, hash, input, bytes * 8, randomness[rgid], &views[rgid][gpid], &countY);
 
-		for (int i = 0; i < 5; i++) {
-			views[rgid][gpid].y[countY] = (hash[i * 4] << 24) | (hash[i * 4 + 1] << 16)
-											| (hash[i * 4 + 2] << 8) | hash[i * 4 + 3];
+		for (int i = 0; i < RESULT_WORD; i++) {
+			views[rgid][gpid].y[countY] = 
+					(hash[i * 4] << 24)     | 
+					(hash[i * 4 + 1] << 16) |
+					(hash[i * 4 + 2] << 8)  | 
+					(hash[i * 4 + 3]);
+
 			countY += 1;
 		}
 
