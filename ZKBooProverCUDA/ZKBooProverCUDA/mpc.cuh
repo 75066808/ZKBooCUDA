@@ -1,9 +1,7 @@
-#pragma once
-
-#include "device_launch_parameters.h"
+#ifndef _MPC_CUH
+#define _MPC_CUH
 
 #include <stdint.h>
-
 #include "setting.cuh"
 
 typedef struct {
@@ -22,6 +20,15 @@ typedef struct {
 	unsigned char r[2][4];
 } z;
 
+
+
+#include "utility.cuh"
+
+
 __device__ void dMpcSha1(int bgid, int gpid, unsigned char* result, unsigned char* input, int numBits, unsigned char (*randomness)[RANDTAPE_SIZE], View* view, int* countY);
 
+__device__ void dMpcSha1OneCore(unsigned char (*results)[32], unsigned char* input[3], int numBits, unsigned char (*randomness)[RANDTAPE_SIZE], View views[3], int* countY);
+
 __device__ void output(View* v, void* result);
+
+#endif

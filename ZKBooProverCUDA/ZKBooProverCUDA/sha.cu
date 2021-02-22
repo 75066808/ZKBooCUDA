@@ -1,5 +1,4 @@
 #include "sha.cuh"
-#include "utility.cuh"
 
 __constant__ uint32_t dK[64] = { 
 		0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,

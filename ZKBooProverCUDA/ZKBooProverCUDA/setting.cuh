@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _SETTING_CUH
+#define _SETTING_CUH
 
 #define WARP_SIZE			   32
 
@@ -21,3 +22,5 @@
 #define RANDTAPE_SIZE	       GENRAND_ITER * 16
 
 #define INPUT_MAX_SIZE	       55
+
+#endif

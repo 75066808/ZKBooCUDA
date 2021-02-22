@@ -1,10 +1,12 @@
-#pragma once
-
-#include "device_launch_parameters.h"
+#ifndef _UTILITY_CUH
+#define _UTILITY_CUH
 
 #include <stdint.h>
 
 #include "mpc.cuh"
+#include "setting.cuh"
+#include "aes.cuh"
+#include "sha.cuh"
 
 #define CH(e,f,g) ((e & f) ^ ((~e) & g))
 
@@ -18,10 +20,12 @@ __device__ void dMemcpy(void* dest, void* src, int bytes);
 
 __device__ void dMemset(void* dest, int bytes, char ch);
 
-__device__ void getAllRandomness(unsigned char key[16], unsigned char randomness[RANDTAPE_SIZE], int offset);
+// __device__ void getAllRandomness(unsigned char key[16], unsigned char randomness[RANDTAPE_SIZE], int offset);
 
 __device__ uint32_t getRandom32(unsigned char randomness[RANDTAPE_SIZE], int randCount);
 
 __device__ void H(unsigned char k[16], View* v, unsigned char r[4], uint8_t* hash);
 
-__host__ void H3(uint32_t y[8], a* as, int s, int* es);
+// __host__ void H3(uint32_t y[8], a* as, int s, int* es);
+
+#endif

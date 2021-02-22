@@ -99,7 +99,7 @@ __device__ void dAddRoundKey(uint8_t state[4][4], uint8_t *key) {
 }
 
 __device__ void dAesEncrypt(uint8_t plain[16], uint8_t key[16], uint8_t cipher[16]) {
-	uint8_t keys[44 * 4];
+	uint8_t keys[44 * 4];   // 176 bytes
 	uint8_t state[4][4];
 
 	for (int i = 0; i < 4; i++)
@@ -155,5 +155,4 @@ __device__ void dAesEncryptCtr(DAES_CTX* ctx, uint8_t plain[16], uint8_t cipher[
 
 	for (int i = 0; i < 16; i++)
 		cipher[i] = plain[i] ^ temp[i];
-
 }
