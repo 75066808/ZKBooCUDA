@@ -21,7 +21,6 @@ __device__ void dMpcXorOneCore(uint32_t *x, uint32_t *y, uint32_t *z)
 	z[2] = x[2] ^ y[2];
 }
 
-// 这个函数存在问题
 __device__ void dMpcAnd(int gpid, uint32_t *x, uint32_t *y, uint32_t *z, unsigned char (*randomness)[RANDTAPE_SIZE], int* randCount, View* view, int* countY) {
 	int gpid1 = (gpid + 1) % PATH_NUM;
 

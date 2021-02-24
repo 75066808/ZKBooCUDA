@@ -26,6 +26,8 @@ __device__ uint32_t getRandom32(unsigned char randomness[RANDTAPE_SIZE], int ran
 
 __device__ void H(unsigned char k[16], View* v, unsigned char r[4], uint8_t* hash);
 
-// __host__ void H3(uint32_t y[8], a* as, int s, int* es);
+__host__ void hH(unsigned char k[16], View* v, unsigned char r[4], uint8_t* hash);
+
+__host__ void H3(uint32_t y[8], a* as, int s, int* es);
 
 #endif
