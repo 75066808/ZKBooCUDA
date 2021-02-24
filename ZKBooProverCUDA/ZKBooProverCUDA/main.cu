@@ -590,17 +590,17 @@ int main() {
 
 	// 
 	// 
-	// cudaMemcpyToSymbol(input, in, INPUT_MAX_SIZE);
-	memcpy(hinput, in, INPUT_MAX_SIZE);
+	cudaMemcpyToSymbol(input, in, INPUT_MAX_SIZE);
+	// memcpy(hinput, in, INPUT_MAX_SIZE);
 	// 
 
 	// Generate keys
 	cudaEventRecord( eventKeysStart, 0);
 	cudaEventSynchronize(eventKeysStart);
 
-	// generateKey << <GENKEY_BLOCK_PER_GRID, GENKEY_THREAD_PER_BLOCK >> > (time(NULL), len);
+	generateKey << <GENKEY_BLOCK_PER_GRID, GENKEY_THREAD_PER_BLOCK >> > (time(NULL), len);
 	// generateKeyOneCore<< <1, 1>> > (time(NULL), len);
-	hgenerateKey(time(NULL), len);
+	// hgenerateKey(time(NULL), len);
 
 	cudaEventRecord( eventKeysEnd, 0);
 	cudaEventSynchronize(eventKeysEnd);
@@ -612,8 +612,9 @@ int main() {
 	cudaEventRecord( eventSharesStart, 0 );
 	cudaEventSynchronize(eventSharesStart);
 
-	// generateShares<< <GENKEY_BLOCK_PER_GRID, GENKEY_THREAD_PER_BLOCK >> > (time(NULL), len);
-	generateShares<< <1, 1>> >(time(NULL), len);
+	generateShares<< <GENKEY_BLOCK_PER_GRID, GENKEY_THREAD_PER_BLOCK >> > (time(NULL), len);
+	// generateSharesOneCore<< <1, 1>> >(time(NULL), len);
+	// hgenerateShares(time(NULL), len);
 
 	cudaEventRecord( eventSharesEnd, 0);
 	cudaEventSynchronize(eventSharesEnd);
@@ -625,9 +626,9 @@ int main() {
 	// generate random
 	cudaEventRecord( eventRandomStart, 0 );
 	cudaEventSynchronize(eventRandomStart);
-	// generateRandom << <GENRAND_BLOCK_PER_GRID, GENRAND_THREAD_PER_BLOCK >> > ();
+	generateRandom << <GENRAND_BLOCK_PER_GRID, GENRAND_THREAD_PER_BLOCK >> > ();
 	// generateRandomOneCore << <1, 1>> > ();
-	hgenerateRandom();
+	// hgenerateRandom();
 
 	cudaEventRecord( eventRandomEnd, 0);
 	cudaEventSynchronize(eventRandomEnd);
@@ -640,9 +641,9 @@ int main() {
 	cudaEventRecord( eventCommitStart, 0);
 	cudaEventSynchronize(eventCommitStart);
 	// printf( "%d %d %d\n", COMMIT_BLOCK_PER_GRID, GROUP_PER_BLOCK, COMMIT_THREAD_PER_BLOCK);
-	// commitA << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > (len);
+	commitA << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > (len);
 	// commitAOneCore<< <1, 1 >> > (len);
-	hcommitA(len);
+	// hcommitA(len);
 	cudaEventRecord( eventCommitEnd, 0);
 	cudaEventSynchronize(eventCommitEnd);
 	float   TimeGenerateCommit;
@@ -659,9 +660,9 @@ int main() {
 
 	cudaEventRecord( eventHashStart, 0);
 	cudaEventSynchronize(eventHashStart);
-	// HashC << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > ();
+	HashC << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > ();
 	// HashCOneCore << <1, 1>> >();
-	hHashC();
+	// hHashC();
 
 	cudaEventRecord( eventHashEnd, 0);
 	cudaEventSynchronize(eventHashEnd);
@@ -684,9 +685,9 @@ int main() {
 
 	cudaEventRecord( eventPackZStart, 0);
 	cudaEventSynchronize(eventPackZStart);
-	// packZ << <PACK_BLOCK_PER_GRID, PACK_THREAD_PER_BLOCK >> > ();
+	packZ << <PACK_BLOCK_PER_GRID, PACK_THREAD_PER_BLOCK >> > ();
 	// packZOneCore<< <1, 1>> >();
-	hpackZ();
+	// hpackZ();
 
 	cudaEventRecord( eventPackZEnd, 0);
 	cudaEventSynchronize(eventPackZEnd);
