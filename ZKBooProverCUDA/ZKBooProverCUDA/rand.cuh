@@ -11,9 +11,15 @@ typedef struct  {
 
 __device__ void dXorShift32Init(DXORSHIFT32_STATE* state, uint32_t seed);
 
+__host__ void hXorShift32Init(DXORSHIFT32_STATE* state, uint32_t seed);
+
 __device__ uint32_t dXorShift32Rand(DXORSHIFT32_STATE* state);
+
+__host__ uint32_t hXorShift32Rand(DXORSHIFT32_STATE* state);
 
 __device__ void getAllRandomness(unsigned char key[16], unsigned char randomness[RANDTAPE_SIZE], int offset);
 // __device__ void getAllRandomness(unsigned char key[16], unsigned char randomness[1476], int offset);
+
+__host__ void hgetAllRandomness(unsigned char key[16], unsigned char randomness[RANDTAPE_SIZE], int offset);
 
 #endif

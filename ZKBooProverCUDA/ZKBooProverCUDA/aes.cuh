@@ -14,6 +14,10 @@ typedef struct{
 
 __device__ void dAesInit(DAES_CTX *ctx, uint8_t key[16], uint8_t counter[16]);
 
+__host__ void hAesInit(DAES_CTX *ctx, uint8_t key[16], uint8_t counter[16]);
+
 __device__ void dAesEncryptCtr(DAES_CTX* ctx, uint8_t plain[16], uint8_t cipher[16], uint32_t th);
+
+__host__ void hAesEncryptCtr(DAES_CTX* ctx, uint8_t plain[16], uint8_t cipher[16], uint32_t th);
 
 #endif

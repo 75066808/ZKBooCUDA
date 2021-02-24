@@ -2,6 +2,7 @@
 #define _UTILITY_CUH
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "mpc.cuh"
 #include "setting.cuh"
@@ -23,6 +24,8 @@ __device__ void dMemset(void* dest, int bytes, char ch);
 // __device__ void getAllRandomness(unsigned char key[16], unsigned char randomness[RANDTAPE_SIZE], int offset);
 
 __device__ uint32_t getRandom32(unsigned char randomness[RANDTAPE_SIZE], int randCount);
+
+__host__ uint32_t hgetRandom32(unsigned char randomness[RANDTAPE_SIZE], int randCount);
 
 __device__ void H(unsigned char k[16], View* v, unsigned char r[4], uint8_t* hash);
 

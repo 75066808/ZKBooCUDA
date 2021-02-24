@@ -8,13 +8,12 @@
 #include "utility.cuh"
 #include "mpc.cuh"
 
-__device__ unsigned char input[INPUT_MAX_SIZE];                // 什么叫device的变量？
-__device__ unsigned char shares[NUM_ROUNDS][PATH_NUM][INPUT_MAX_SIZE];   // 这个就是x
-__device__ unsigned char randomness[NUM_ROUNDS][PATH_NUM][RANDTAPE_SIZE];
+__device__ unsigned char input[INPUT_MAX_SIZE];                // 
+__device__ unsigned char shares[NUM_ROUNDS][PATH_NUM][INPUT_MAX_SIZE];   // 
+__device__ unsigned char randomness[NUM_ROUNDS][PATH_NUM][RANDTAPE_SIZE];  // 
 
-__device__ unsigned char keys[NUM_ROUNDS][PATH_NUM][16];    // 为什么只要16 bytes
-__device__ unsigned char rs[NUM_ROUNDS][PATH_NUM][4];       // 这个是什么，为什么只要4 bytes // 这个rs有什么用？现在还不知道  
-
+__device__ unsigned char keys[NUM_ROUNDS][PATH_NUM][16];    // 
+__device__ unsigned char rs[NUM_ROUNDS][PATH_NUM][4];       // 
 __device__ View views[NUM_ROUNDS][PATH_NUM];
 
 __device__ a as[NUM_ROUNDS];
@@ -25,10 +24,21 @@ a ahs[NUM_ROUNDS];
 z zhs[NUM_ROUNDS];
 int ehs[NUM_ROUNDS];
 
+unsigned char hinput[INPUT_MAX_SIZE];
+unsigned char hshares[NUM_ROUNDS][PATH_NUM][INPUT_MAX_SIZE];
+unsigned char hrandomness[NUM_ROUNDS][PATH_NUM][RANDTAPE_SIZE];
+
 unsigned char hkeys[NUM_ROUNDS][PATH_NUM][16];
 unsigned char hrs[NUM_ROUNDS][PATH_NUM][4];
 View hviews[NUM_ROUNDS][PATH_NUM];
 a has[NUM_ROUNDS];
+z hzs[NUM_ROUNDS];
+int hes[NUM_ROUNDS];
+
+// unsigned char hkeys[NUM_ROUNDS][PATH_NUM][16];
+// unsigned char hrs[NUM_ROUNDS][PATH_NUM][4];
+// View hviews[NUM_ROUNDS][PATH_NUM];
+// a has[NUM_ROUNDS];
 
 // // 
 // // 
@@ -91,6 +101,29 @@ __global__ void generateKeyOneCore(unsigned long long seed, int bytes)
 	}
 }
 
+__host__ void hgenerateKey(unsigned long long seed, int bytes)
+{
+	for(int i=0 ;i<NUM_ROUNDS; i++)
+	{
+		DXORSHIFT32_STATE state;
+		hXorShift32Init(&state, seed + i);
+
+		for (int j=0; j < 4; j++)
+		{
+			hrs[i][0][j] = hXorShift32Rand(&state);
+			hrs[i][1][j] = hXorShift32Rand(&state);
+			hrs[i][2][j] = hXorShift32Rand(&state);
+		}
+
+		for (int j=0; j < 16; j++)
+		{
+			hkeys[i][0][j] = hXorShift32Rand(&state);
+			hkeys[i][1][j] = hXorShift32Rand(&state);
+			hkeys[i][2][j] = hXorShift32Rand(&state);
+		}
+	}
+}
+
 __global__ void generateShares(unsigned long long seed, int bytes)
 {
 	int rtid = blockIdx.x * blockDim.x + threadIdx.x;  // thread id in grid
@@ -134,6 +167,21 @@ __global__ void generateSharesOneCore(unsigned long long seed, int bytes)
 	}
 }
 
+__host__ void hgenerateShares(unsigned long long seed, int bytes)
+{
+	for(int i=0 ;i<NUM_ROUNDS; i++)
+	{
+		DXORSHIFT32_STATE state;
+		hXorShift32Init(&state, seed + i);
+
+		for (int j=0; j < bytes; j++)
+		{
+			hshares[i][0][j] = hXorShift32Rand(&state);
+			hshares[i][1][j] = hXorShift32Rand(&state);
+			hshares[i][2][j] = hinput[i] ^ hshares[i][0][j] ^ hshares[i][1][j];
+		}
+	}
+}
 
 // //-------------------------------------------------------------------------
 
@@ -176,6 +224,24 @@ __global__ void generateRandomOneCore(void)
 		}
 	}
 }
+
+
+__host__ void hgenerateRandom(void)
+{
+	for(int i=0; i< NUM_ROUNDS; i++)
+	{
+		for(int j=0; j<PATH_NUM; j++)
+		{
+			for(int k=0; k<GENRAND_ITER; k++)
+			{
+				hgetAllRandomness(keys[i][j], randomness[i][j], k);
+			}
+		}
+	}
+}
+
+
+
 
 // //-------------------------------------------------------------------------
 
@@ -297,6 +363,37 @@ __global__ void commitAOneCore(int bytes)
 }
 
 
+__host__ void hcommitA(int bytes)
+{
+	for(int i=0; i < NUM_ROUNDS; i++)
+	{
+		unsigned char* inputs[3];
+		inputs[0] = hshares[i][0];
+		inputs[1] = hshares[i][1];
+		inputs[2] = hshares[i][2];
+
+		unsigned char hashes[3][32];
+		int countY = 0;
+		hMpcSha1(hashes, inputs, bytes * 8, hrandomness[i], hviews[i], &countY);
+
+		for (int j = 0; j < 5; j++) {
+			hviews[i][0].y[countY] = (hashes[0][j * 4] << 24) | (hashes[0][j * 4 + 1] << 16)
+											| (hashes[0][j * 4 + 2] << 8) | hashes[0][j * 4 + 3];
+
+			hviews[i][1].y[countY] = (hashes[1][j * 4] << 24) | (hashes[1][j * 4 + 1] << 16)
+											| (hashes[1][j * 4 + 2] << 8) | hashes[1][j * 4 + 3];
+
+			hviews[i][2].y[countY] = (hashes[2][j * 4] << 24) | (hashes[2][j * 4 + 1] << 16)
+											| (hashes[2][j * 4 + 2] << 8) | hashes[2][j * 4 + 3];
+			countY += 1;
+		}
+
+		houtput(&hviews[i][0], has[i].yp[0]);
+		houtput(&hviews[i][1], has[i].yp[1]);
+		houtput(&hviews[i][2], has[i].yp[2]);
+	}
+}
+
 __global__ void HashC()
 {
 	int rbid = blockIdx.x;	// block id in grid
@@ -396,6 +493,21 @@ __global__ void packZOneCore(void)
 	}
 }
 
+__host__ void hpackZ(void)
+{
+	for(int i=0; i<NUM_ROUNDS; i++)
+	{
+		int e = hes[i];
+		hzs[i].v[0] = hviews[i][e];
+		hzs[i].v[1] = hviews[i][(e+1) % 3];
+		memcpy(hzs[i].k[0], hkeys[i][e], 16);
+		memcpy(hzs[i].k[1], hkeys[i][(e+1) % 3], 16);
+		memcpy(hzs[i].r[0], hrs[i][e], 4);
+		memcpy(hzs[i].r[1], hrs[i][(e+1) % 3], 4);
+	}
+}
+
+
 // //-------------------------------------------------------------------------
 
 // __host__ void writeToFile(void) {
@@ -478,9 +590,8 @@ int main() {
 
 	// 
 	// 
-	cudaMemcpyToSymbol(input, in, INPUT_MAX_SIZE);
-	// cudaMemcpyToSymbol(input, in, INPUT_MAX_SIZE);    
-
+	// cudaMemcpyToSymbol(input, in, INPUT_MAX_SIZE);
+	memcpy(hinput, in, INPUT_MAX_SIZE);
 	// 
 
 	// Generate keys
@@ -488,7 +599,8 @@ int main() {
 	cudaEventSynchronize(eventKeysStart);
 
 	// generateKey << <GENKEY_BLOCK_PER_GRID, GENKEY_THREAD_PER_BLOCK >> > (time(NULL), len);
-	generateKeyOneCore<< <1, 1>> > (time(NULL), len);
+	// generateKeyOneCore<< <1, 1>> > (time(NULL), len);
+	hgenerateKey(time(NULL), len);
 
 	cudaEventRecord( eventKeysEnd, 0);
 	cudaEventSynchronize(eventKeysEnd);
@@ -514,7 +626,8 @@ int main() {
 	cudaEventRecord( eventRandomStart, 0 );
 	cudaEventSynchronize(eventRandomStart);
 	// generateRandom << <GENRAND_BLOCK_PER_GRID, GENRAND_THREAD_PER_BLOCK >> > ();
-	generateRandomOneCore << <1, 1>> > ();
+	// generateRandomOneCore << <1, 1>> > ();
+	hgenerateRandom();
 
 	cudaEventRecord( eventRandomEnd, 0);
 	cudaEventSynchronize(eventRandomEnd);
@@ -528,8 +641,8 @@ int main() {
 	cudaEventSynchronize(eventCommitStart);
 	// printf( "%d %d %d\n", COMMIT_BLOCK_PER_GRID, GROUP_PER_BLOCK, COMMIT_THREAD_PER_BLOCK);
 	// commitA << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > (len);
-	commitAOneCore<< <1, 1 >> > (len);
-
+	// commitAOneCore<< <1, 1 >> > (len);
+	hcommitA(len);
 	cudaEventRecord( eventCommitEnd, 0);
 	cudaEventSynchronize(eventCommitEnd);
 	float   TimeGenerateCommit;
@@ -547,8 +660,8 @@ int main() {
 	cudaEventRecord( eventHashStart, 0);
 	cudaEventSynchronize(eventHashStart);
 	// HashC << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > ();
-	HashCOneCore << <1, 1>> >();
-	// hHashC();
+	// HashCOneCore << <1, 1>> >();
+	hHashC();
 
 	cudaEventRecord( eventHashEnd, 0);
 	cudaEventSynchronize(eventHashEnd);
@@ -556,6 +669,7 @@ int main() {
     cudaEventElapsedTime( &TimeGenerateHash, eventHashStart, eventHashEnd );
     // printf( "Time to generate Hash:  %3.5f ms\n", TimeGenerateHash );
 
+	// generate E
 	cudaEventRecord( eventGenerateEStart, 0);
 	cudaEventSynchronize(eventGenerateEStart);
 	cudaMemcpyFromSymbol(ahs, as, NUM_ROUNDS * sizeof(a));
@@ -567,18 +681,20 @@ int main() {
     cudaEventElapsedTime( &TimeGenerateE, eventGenerateEStart, eventGenerateEEnd );
     // printf( "Time to generate E:  %3.5f ms\n", TimeGenerateE );
 
+
 	cudaEventRecord( eventPackZStart, 0);
 	cudaEventSynchronize(eventPackZStart);
 	// packZ << <PACK_BLOCK_PER_GRID, PACK_THREAD_PER_BLOCK >> > ();
-	packZOneCore<< <1, 1>> >();
-	
+	// packZOneCore<< <1, 1>> >();
+	hpackZ();
+
 	cudaEventRecord( eventPackZEnd, 0);
 	cudaEventSynchronize(eventPackZEnd);
 	float   TimePackZ;
     cudaEventElapsedTime( &TimePackZ, eventPackZStart, eventPackZEnd );
     // printf( "Time to Pack Z:  %3.5f ms\n", TimePackZ );
 
-	cudaMemcpyFromSymbol(zhs, zs, NUM_ROUNDS * sizeof(z));
+	// cudaMemcpyFromSymbol(zhs, zs, NUM_ROUNDS * sizeof(z));
 
 	cudaEventRecord( eventEnd, 0);
 	cudaEventSynchronize(eventEnd);

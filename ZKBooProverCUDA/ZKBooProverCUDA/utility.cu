@@ -32,6 +32,12 @@ __device__ uint32_t getRandom32(unsigned char randomness[RANDTAPE_SIZE], int ran
 	return ret;
 }
 
+__host__ uint32_t hgetRandom32(unsigned char randomness[RANDTAPE_SIZE], int randCount) {
+	uint32_t ret;
+	memcpy(&ret, &randomness[randCount], 4);
+	return ret;
+}
+
 
 __device__ void H(unsigned char k[16], View* v, unsigned char r[4], uint8_t* hash) {
 	DSHA_CTX ctx;

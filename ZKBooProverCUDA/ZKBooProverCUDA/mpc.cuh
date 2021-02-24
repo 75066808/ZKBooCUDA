@@ -2,6 +2,7 @@
 #define _MPC_CUH
 
 #include <stdint.h>
+#include <stdio.h>
 #include "setting.cuh"
 
 typedef struct {
@@ -29,6 +30,10 @@ __device__ void dMpcSha1(int bgid, int gpid, unsigned char* result, unsigned cha
 
 __device__ void dMpcSha1OneCore(unsigned char (*results)[32], unsigned char* input[3], int numBits, unsigned char (*randomness)[RANDTAPE_SIZE], View views[3], int* countY);
 
+__host__ void hMpcSha1(unsigned char (*results)[32], unsigned char* input[3], int numBits, unsigned char (*randomness)[RANDTAPE_SIZE], View views[3], int* countY);
+
 __device__ void output(View* v, void* result);
+
+__host__ void houtput(View* v, void* result);
 
 #endif
