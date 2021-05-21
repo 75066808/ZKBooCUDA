@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "timer.cuh"
 #include "rand.cuh"
 #include "utility.cuh"
 #include "mpc.cuh"
@@ -194,33 +195,45 @@ int main() {
 
 	int len = strlen(in) - 1;
 
-	clock_t begin = clock();
+	Timer totalTimer;
+	Timer generateKeyTimer, generateRandomTimer;
+	Timer commitATimer, packZTimer;
+
+	totalTimer.start();
 
 	cudaMemcpyToSymbol(input, in, INPUT_MAX_SIZE);
-	
+
+	generateKeyTimer.start();
 	generateKey << <GENKEY_BLOCK_PER_GRID, GENKEY_THREAD_PER_BLOCK >> > (time(NULL), len);
+	generateKeyTimer.stop();
 
+	generateRandomTimer.start();
 	generateRandom << <GENRAND_BLOCK_PER_GRID, GENRAND_THREAD_PER_BLOCK >> > ();
+	generateRandomTimer.stop();
 
+	commitATimer.start();
 	commitA << <COMMIT_BLOCK_PER_GRID, COMMIT_THREAD_PER_BLOCK >> > (len);
+	commitATimer.stop();
 
 	cudaMemcpyFromSymbol(ahs, as, NUM_ROUNDS * sizeof(a));
 	generateE(); // serial in cpu
 	cudaMemcpyToSymbol(es, ehs, NUM_ROUNDS * sizeof(int));
 
+	packZTimer.start();
 	packZ << <PACK_BLOCK_PER_GRID, PACK_THREAD_PER_BLOCK >> > ();
-	
-	cudaMemcpyFromSymbol(zhs, zs, NUM_ROUNDS * sizeof(z));
+	packZTimer.stop();
 
-	clock_t endGenerateProve = clock();
+	cudaMemcpyFromSymbol(zhs, zs, NUM_ROUNDS * sizeof(z));
 
 	writeToFile();
 
-	clock_t end = clock();
+	totalTimer.stop();
 
-	printf("Genereate Prove: %d ms\n", (endGenerateProve - begin) * 1000 / CLOCKS_PER_SEC);
-	printf("Write To File: %d ms\n", (end - endGenerateProve) * 1000 / CLOCKS_PER_SEC);
-	printf("Total: %d ms\n", (end - begin) * 1000 / CLOCKS_PER_SEC);
+	printf("Total: %.3f ms\n", totalTimer.elapsed());
+	printf("Generate Key: %.3f ms\n", generateKeyTimer.elapsed());
+	printf("Generate Randomness: %.3f ms\n", generateRandomTimer.elapsed());
+	printf("Commit A: %.3f ms\n", commitATimer.elapsed());
+	printf("Pack Z: %.3f ms\n", packZTimer.elapsed());
 
     return 0;
 }

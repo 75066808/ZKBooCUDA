@@ -1,5 +1,5 @@
 #pragma once
-//#define SHA1
+#define SHA1
 
 #ifdef  SHA1
 #define YSIZE				   370

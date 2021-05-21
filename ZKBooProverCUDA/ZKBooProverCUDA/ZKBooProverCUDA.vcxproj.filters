@@ -39,6 +39,9 @@
     <ClInclude Include="setting.cuh">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="timer.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="头文件">

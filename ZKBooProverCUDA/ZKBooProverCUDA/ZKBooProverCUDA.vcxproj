@@ -98,6 +98,7 @@
     <ClInclude Include="setting.cuh" />
     <ClInclude Include="rand.cuh" />
     <ClInclude Include="sha.cuh" />
+    <ClInclude Include="timer.cuh" />
     <ClInclude Include="utility.cuh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

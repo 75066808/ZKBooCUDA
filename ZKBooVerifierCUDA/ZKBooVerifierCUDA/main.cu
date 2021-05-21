@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "timer.cuh"
 #include "rand.cuh"
 #include "utility.cuh"
 #include "mpc.cuh"
@@ -133,20 +134,19 @@ __global__ void warmup(void) {
 int main() {
 	warmup << < 1, 1 >> > ();
 
-	printf("Iterations of SHA: %d\n", NUM_ROUNDS);
+	Timer totalTimer;
+	Timer verifyHashAndResultTimer;
+	Timer generateRandomTimer;
+	Timer verifyMPCTimer;
 
-	clock_t begin = clock();
+	totalTimer.start();
 
 	readFromFile();
-
-	clock_t endReadFile = clock();
 
 	uint32_t y[8];
 	reconstruct(ahs[0].yp[0], ahs[0].yp[1], ahs[0].yp[2], y);
 
 	generateE(y);
-
-	clock_t endGenerateE = clock();
 
 	volatile bool* vflag;
 
@@ -159,19 +159,27 @@ int main() {
 	cudaMemcpyToSymbol(zs, zhs, NUM_ROUNDS * sizeof(z));
 	cudaMemcpyToSymbol(es, ehs, NUM_ROUNDS * sizeof(int));
 
+	verifyHashAndResultTimer.start();
 	verifyHashAndResult<< <VERIFY_HASH_BLOCK_PER_GRID, VERIFY_HASH_THREAD_PER_BLOCK >> >(vflag);
-	
+	verifyHashAndResultTimer.stop();
+
 	cudaMemcpy(&vflagh, (void*)vflag, sizeof(bool), cudaMemcpyDeviceToHost);
 
 	if (!vflagh) {
+		generateRandomTimer.start();
 		generateRandom << <GENRAND_BLOCK_PER_GRID, GENRAND_THREAD_PER_BLOCK >> > ();
+		generateRandomTimer.stop();
+
+		verifyMPCTimer.start();
 		verifyMPC << <VERIFY_MPC_BLOCK_PER_GRID, VERIFY_MPC_THREAD_PER_BLOCK >> > (vflag);
+		verifyMPCTimer.stop();
+
 		cudaMemcpy(&vflagh, (void*)vflag, sizeof(bool), cudaMemcpyDeviceToHost);
 	}
 	
 	cudaFree((void*)vflag);
 
-	clock_t end = clock();
+	totalTimer.stop();
 
 	printf("Proof for hash: ");
 	for (int i = 0; i < RESULT_WORD; i++)
@@ -183,10 +191,10 @@ int main() {
 	else
 		printf("Verified\n");	
 	
-	printf("Read from file: %d ms\n", (endReadFile - begin) * 1000 / CLOCKS_PER_SEC);
-	printf("Generate E: %d ms\n", (endGenerateE - endReadFile) * 1000 / CLOCKS_PER_SEC);
-	printf("Verify : %d ms\n", (end - endGenerateE) * 1000 / CLOCKS_PER_SEC);
-	printf("Total: %d ms\n", (end - begin) * 1000 / CLOCKS_PER_SEC);
+	printf("Total: %.3f ms\n", totalTimer.elapsed());
+	printf("Verify Hash and Result: %.3f ms\n", verifyHashAndResultTimer.elapsed());
+	printf("Generate Randomness: %.3f ms\n", generateRandomTimer.elapsed());
+	printf("Verify MPC: %.3f ms\n", verifyMPCTimer.elapsed());
 
     return 0;
 }

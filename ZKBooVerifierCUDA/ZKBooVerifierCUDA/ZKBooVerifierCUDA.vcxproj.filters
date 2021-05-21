@@ -27,6 +27,9 @@
     <ClInclude Include="sha.cuh">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="timer.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="utility.cu">
